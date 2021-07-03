@@ -24,6 +24,10 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
+// Request body parser
+app.use(express.json());
+app.use(express.urlencoded({extended: false}));
+
 app.get('/', (req, res, next) => {
     res.status(200).json({status: 'ok'});
 });
@@ -38,7 +42,7 @@ const server = app.listen(PORT, debug(`Server running in ${process.env.NODE_ENV}
 app.use((error, req, res, next) => {
     debug('Global Error Handler Middleware Reached...'.warn);
     // debug(`Error: ${error.message}`);
-    res.status(error.staus).json({message: error.message});
+    res.status(error.status).json({message: error.message});
 });
 
 server.on("close", () => {debug('Server Closed.')});
