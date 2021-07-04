@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const app = express();
 const connectMongodb = require('./config/db');
 const colors = require('./utils/colors-config');
+const errorHandler = require('./middlewares/error');
 
 // Route files
 const classroomsRoutes = require('./routes/classrooms');
@@ -34,17 +35,13 @@ app.get('/', (req, res, next) => {
 
 app.use('/api/classrooms', classroomsRoutes);
 
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, debug(`Server running in ${process.env.NODE_ENV} mode and listening on port ${PORT}...`.warn.bold.italic));
 
 // Global Error Handling
-app.use((error, req, res, next) => {
-    debug('Global Error Handler Middleware Reached...'.warn);
-    // debug(`Error: ${error.message}`);
-    res.status(error.status).json({message: error.message});
-});
-
 server.on("close", () => {debug('Server Closed.')});
 
 process.on('unhandledRejection', (error) => {
