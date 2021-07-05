@@ -4,7 +4,8 @@ const {
     getClassrooms,
     updateClassroom,
     createClassroom,
-    deleteClassroom
+    deleteClassroom,
+    getClassroomsWithinRadius
 } = require('../controllers/classrooms');
 
 router.get('/', getClassrooms);
@@ -16,6 +17,8 @@ router.post('/', createClassroom);
 router.put('/:id', updateClassroom);
 
 router.delete('/:id', deleteClassroom);
+
+router.get('/withinradius/:zipcode/:distance', getClassroomsWithinRadius);
 
 // A more cleaner way to define routes.
 // router.route('/').get(getClassrooms).post(createClassroom);

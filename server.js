@@ -2,6 +2,8 @@ const express = require('express');
 const morgan = require('morgan');
 const debug = require('debug')('app:server');
 const dotenv = require('dotenv');
+// Loading env varaibles
+dotenv.config({path: './config/config.env'});
 
 const app = express();
 const connectMongodb = require('./config/db');
@@ -10,9 +12,6 @@ const errorHandler = require('./middlewares/error');
 
 // Route files
 const classroomsRoutes = require('./routes/classrooms');
-
-// Loading env varaibles
-dotenv.config({path: './config/config.env'});
 
 // Database Connection
 connectMongodb();

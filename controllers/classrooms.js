@@ -2,6 +2,7 @@ const Classroom = require('../models/Classroom');
 const debug = require('debug')('app:classroom.controller');
 
 const ErrorResponse = require('../utils/errorResponse');
+const geocoder = require('../utils/geocoder');
 
 /** @type RequestHandler */
 exports.getClassrooms = async (req, res, next)  => {
@@ -58,6 +59,35 @@ exports.deleteClassroom = async (req, res, next)  => {
         if (!classroom) return next(new ErrorResponse(`Resource not found with this id ${req.params.id}`, 404));
     
         res.status(200).json({success: true, data: classroom});
+    } catch (error) {
+        next(error);
+    }
+}
+
+// @route  GET /api/classrooms/withinradius/:zipcode/:distance
+/** @type RequestHandler */
+exports.getClassroomsWithinRadius = async (req, res, next)  => {
+    try {
+        const zipcode = +req.params.zipcode;
+        const distance = +req.params.distance;
+
+        // Getting lat lng from node-geocoder
+        const loc = await geocoder.geocode(zipcode);
+        const lat = loc[0].latitude;
+        const lng = loc[0].longitude;
+
+        // Earth radius in 6371 km
+        // dividing the distance by radius of earth
+        const radius = distance / 6371;
+        const filterQuery = {
+            location: {
+                $geoWithin: {
+                    $centerSphere: [[lng, lat], radius]
+                }
+            }
+        };
+        const classrooms = await Classroom.find(filterQuery);
+        res.status(200).json({success: true, count: classrooms.length, data: classrooms});
     } catch (error) {
         next(error);
     }

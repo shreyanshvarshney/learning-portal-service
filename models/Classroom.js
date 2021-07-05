@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
+
 const customRegex = require('../utils/custom-regex');
+const geocoder = require('../utils/geocoder');
 
 const classroomSchema = new mongoose.Schema({
     name: {
@@ -42,11 +45,9 @@ const classroomSchema = new mongoose.Schema({
         type: {
             type: String,
             enum: ['Point'], // 'location.type' must be 'Point'
-            // required: true
         },
         coordinates: {
             type: [Number],
-            // required: true,
             index: '2dsphere'
         },
         formattedAdress: String,
@@ -107,5 +108,30 @@ const classroomSchema = new mongoose.Schema({
     }
 },
 {timestamps: true});
+
+// Document Middleware function: Pre hook for this model
+// Create classroom slug from the name
+classroomSchema.pre('save', function(next) {
+    this.slug = slugify(this.name, {replacement: '-', lower: true});
+    next();
+});
+
+// Geocode and create location field
+classroomSchema.pre('save', async function(next) {
+    const res = await geocoder.geocode(this.address);
+    console.log(res);
+    const loc = res[0];
+    this.location = {
+        type: 'Point',
+        coordinates: [loc.longitude, loc.latitude],
+        formattedAdress: loc.formattedAddress,
+        country: loc.countryCode,
+        state: loc.stateCode,
+        city: loc.city,
+        street: loc.streetName,
+        zipcode: loc.zipcode,
+    };
+    next();
+});
 
 module.exports = mongoose.model('Classroom', classroomSchema);
