@@ -1,10 +1,7 @@
+const _ = require('./config/env');
 const express = require('express');
 const morgan = require('morgan');
 const debug = require('debug')('app:server');
-const dotenv = require('dotenv');
-// Loading env varaibles
-dotenv.config({path: './config/config.env'});
-
 const app = express();
 const connectMongodb = require('./config/db');
 const colors = require('./utils/colors-config');

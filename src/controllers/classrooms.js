@@ -1,14 +1,75 @@
 const Classroom = require('../models/Classroom');
 const debug = require('debug')('app:classroom.controller');
 
+const {validatePaginationParams} = require('../validations/classroom');
 const ErrorResponse = require('../utils/errorResponse');
 const geocoder = require('../utils/geocoder');
 
 /** @type RequestHandler */
 exports.getClassrooms = async (req, res, next)  => {
     try {
-        const classrooms = await Classroom.find();
-        res.status(200).json({success: true,  count: classrooms.length, data: classrooms});
+        let query = Classroom.find();
+
+        // Select Particular fields
+        const select = req.query.select;
+        if (select) {
+            let selectArray;
+            try {
+                selectArray = JSON.parse(req.query.select);
+            } catch (error) {
+                return next(new ErrorResponse(`Please provide valid query param values for selection`, 400));
+            }
+            if (selectArray.length > 0) {
+                const selectedFields = selectArray.join(' ');
+                query.select(selectedFields);
+            }
+        }
+
+        // Pagination
+        const pageSize = +req.query.pageSize;
+        const pageIndex = +req.query.pageIndex;
+        let pagination = {};
+        if (pageSize && pageIndex) {
+            if (!validatePaginationParams(pageSize, pageIndex)) return next(new ErrorResponse(`Please provide valid query param values for pagination`, 400));
+            const endIndex = pageSize * pageIndex;
+            const startIndex = pageSize * (pageIndex - 1);
+            const total = await Classroom.countDocuments();
+            const indexCount = Math.floor(total / pageSize);
+            query.limit(pageSize).skip(startIndex);
+            if (pageIndex < indexCount) {
+                pagination.next = {
+                    pageIndex: pageIndex + 1,
+                    pageSize
+                }
+            }
+            if (startIndex > 0) {
+                pagination.prev = {
+                    pageIndex: pageIndex - 1,
+                    pageSize
+                }
+            }
+        }
+
+        // Sorting
+        const sort = req.query.sort;
+        if (sort) {
+            let sortArray;
+            try {
+                sortArray = JSON.parse(req.query.sort);
+            } catch (error) {
+                return next(new ErrorResponse(`Please provide valid query param values for sorting`, 400));
+            }
+            if (sortArray.length > 0) {
+                const sortedFields = sortArray.join(' ');
+                query.sort(sortedFields);
+            }
+        } else {
+            query.sort('-createdAt');
+        }
+
+        // Executing query
+        const classrooms = await query;
+        res.status(200).json({success: true, count: classrooms.length, pagination, data: classrooms});
     } catch (error) {
         next(error);
     }
