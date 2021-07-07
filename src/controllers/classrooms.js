@@ -12,6 +12,7 @@ exports.getClassrooms = async (req, res, next)  => {
 
         // Select Particular fields
         const select = req.query.select;
+        console.log(select, typeof select);
         if (select) {
             let selectArray;
             try {
@@ -20,8 +21,7 @@ exports.getClassrooms = async (req, res, next)  => {
                 return next(new ErrorResponse(`Please provide valid query param values for selection`, 400));
             }
             if (selectArray.length > 0) {
-                const selectedFields = selectArray.join(' ');
-                query.select(selectedFields);
+                query.select(selectArray);
             }
         }
 
