@@ -1,6 +1,7 @@
 # custom
-config/config.env
+dev.env
 middlewares/async.js
+/tests
 
 # compiled output
 /dist

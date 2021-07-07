@@ -12,7 +12,6 @@ exports.getClassrooms = async (req, res, next)  => {
 
         // Select Particular fields
         const select = req.query.select;
-        console.log(select, typeof select);
         if (select) {
             let selectArray;
             try {

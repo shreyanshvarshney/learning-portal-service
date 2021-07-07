@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
 
 // Loading env varaibles
-dotenv.config();
+// dotenv.config();
 
 // For custom path
-// dotenv.config({path: '.env'});
+dotenv.config({path: 'dev.env'});
